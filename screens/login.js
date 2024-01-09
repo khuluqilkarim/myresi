@@ -1,6 +1,6 @@
 import { View, Text, Image, TextInput, TouchableOpacity } from "react-native";
 import Checkbox from "expo-checkbox";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useCallback } from "react";
 import Buttons from "../components/Buttons";
 import { useFonts } from "expo-font";
@@ -8,8 +8,31 @@ import Separator from "../components/Seperator";
 import Background from "../components/background";
 import { StatusBar } from "expo-status-bar";
 import COLORS from "../constants/colors";
+import { auth } from "../firebase";
 
 const Login = ({ navigation }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = () => {
+    auth
+      .signInWithEmailAndPassword(email, password)
+      .then((userCredentials) => {
+        const user = userCredentials.user;
+        console.log("Logged in with : ", user.email);
+      })
+      .catch((error) => alert(error.message));
+  };
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        navigation.navigate("home");
+      }
+    });
+    return unsubscribe;
+  });
+
   const [fontsLoaded] = useFonts({
     "Manrope-Reguler": require("../assets/fonts/Manrope-Regular.ttf"),
     "Manrope-Bold": require("../assets/fonts/Manrope-Bold.ttf"),
@@ -29,7 +52,7 @@ const Login = ({ navigation }) => {
     <Background>
       <StatusBar style="light" />
       <View>
-        <Separator height={150} />
+        <Separator height={80} />
         <View style={{ marginHorizontal: 20 }}>
           <View style={{ flexDirection: "row" }}>
             <Text
@@ -89,6 +112,8 @@ const Login = ({ navigation }) => {
               <TextInput
                 placeholder="Enter Your Email"
                 placeholderTextColor={COLORS.button}
+                value={email}
+                onChangeText={(text) => setEmail(text)}
               />
             </View>
             <Separator height={15} />
@@ -112,52 +137,38 @@ const Login = ({ navigation }) => {
               <TextInput
                 placeholder="Enter Your Password"
                 placeholderTextColor={COLORS.button}
+                value={password}
+                onChangeText={(text) => setPassword(text)}
+                secureTextEntry
               />
             </View>
             <Separator height={15} />
             <View
               style={{
-                flexDirection: "row",
+                marginLeft: 100,
               }}
             >
-              <Checkbox />
-              <Text
-                style={{
-                  marginTop: -2,
-                  paddingLeft: 10,
-                  fontFamily: "Manrope-Bold",
-                  color: COLORS.text,
-                }}
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Forgetpass")}
               >
-                Remember Me
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Forgetpass")}
+                <Text
+                  style={{
+                    marginTop: -2,
+                    paddingLeft: 100,
+                    fontFamily: "Manrope-Bold",
+                    color: COLORS.text,
+                  }}
                 >
-                  <Text
-                    style={{
-                      marginTop: -2,
-                      paddingLeft: 100,
-                      fontFamily: "Manrope-Bold",
-                      color: COLORS.text,
-                    }}
-                  >
-                    Forget Password?
-                  </Text>
-                </TouchableOpacity>
-              </View>
+                  Forget Password?
+                </Text>
+              </TouchableOpacity>
             </View>
             <Separator height={40} />
           </View>
         </View>
         <Buttons
           text="Log in"
-          onPress={() => navigation.navigate("Menu")}
+          onPress={handleLogin}
           containerStyle={{ backgroundColor: COLORS.button }}
           textStyle={{
             color: COLORS.secondry,

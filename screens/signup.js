@@ -1,6 +1,6 @@
 import { View, Text, Image, TextInput, TouchableOpacity } from "react-native";
 import Checkbox from "expo-checkbox";
-import React from "react";
+import React, { useState } from "react";
 import { useCallback } from "react";
 import Buttons from "../components/Buttons";
 import { useFonts } from "expo-font";
@@ -8,8 +8,24 @@ import Separator from "../components/Seperator";
 import Background from "../components/background";
 import { StatusBar } from "expo-status-bar";
 import COLORS from "../constants/colors";
+import { auth } from "../firebase";
 
 const Signup = ({ navigation }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+
+  const handleSignUp = () => {
+    auth
+      .createUserWithEmailAndPassword(email, password)
+      .then((userCredentials) => {
+        const user = userCredentials.user;
+        console.log(user.email);
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
+  };
   const [fontsLoaded] = useFonts({
     "Manrope-Reguler": require("../assets/fonts/Manrope-Regular.ttf"),
     "Manrope-Bold": require("../assets/fonts/Manrope-Bold.ttf"),
@@ -29,7 +45,7 @@ const Signup = ({ navigation }) => {
     <Background>
       <StatusBar style="light" />
       <View>
-        <Separator height={150} />
+        <Separator height={80} />
         <View style={{ marginHorizontal: 20 }}>
           <View style={{ flexDirection: "row" }}>
             <Text
@@ -89,6 +105,8 @@ const Signup = ({ navigation }) => {
               <TextInput
                 placeholder="Enter Your Username"
                 placeholderTextColor={COLORS.button}
+                value={username}
+                onChangeText={(text) => setUsername(text)}
               />
             </View>
             <Separator height={15} />
@@ -113,6 +131,8 @@ const Signup = ({ navigation }) => {
               <TextInput
                 placeholder="Enter Your Email"
                 placeholderTextColor={COLORS.button}
+                value={email}
+                onChangeText={(text) => setEmail(text)}
               />
             </View>
             <Separator height={15} />
@@ -136,6 +156,9 @@ const Signup = ({ navigation }) => {
               <TextInput
                 placeholder="Enter Your Password"
                 placeholderTextColor={COLORS.button}
+                value={password}
+                onChangeText={(text) => setPassword(text)}
+                secureTextEntry
               />
             </View>
 
@@ -144,7 +167,7 @@ const Signup = ({ navigation }) => {
         </View>
         <Buttons
           text="Sign up"
-          onPress={() => navigation.navigate("Welcome")}
+          onPress={handleSignUp}
           containerStyle={{ backgroundColor: COLORS.button }}
           textStyle={{
             color: COLORS.secondry,
